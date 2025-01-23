@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interfaz de Datos de Sensores</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+        }
+
+        .data-list {
+            margin-top: 20px;
+        }
+
+        .data-item {
+            padding: 10px;
+            border: 1px solid #ddd;
+            margin-bottom: 10px;
+            border-radius: 4px;
+        }
+
+        .button-container {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .refresh-button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+        }
+
+        .refresh-button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Datos de Sensores</h1>
+        <div id="data-container" class="data-list">
+            <!-- Los datos serán mostrados aquí -->
+            <div class="data-item" id="sensor-data">
+                <strong>Temperatura: </strong><span id="temp">Cargando...</span><br>
+                <strong>Humedad: </strong><span id="humedad">Cargando...</span>
+            </div>
+        </div>
+        <div class="button-container">
+            <!-- Botón para refrescar los datos -->
+            <button class="refresh-button" onclick="getData()">Refrescar Datos</button>
+        </div>
+    </div>
+
+    <script>
+        async function getData() {
+            try {
+                // Realizamos la solicitud a la URL de la API para obtener Temp y Humedad
+                const responseTemp = await fetch('http://127.0.0.1:8000/get-data/Temp'); // Obtener la temperatura
+                const responseHumedad = await fetch('http://127.0.0.1:8000/get-data/Humedad'); // Obtener la humedad
+
+                const dataTemp = await responseTemp.json();
+                const dataHumedad = await responseHumedad.json();
+
+                // Verificamos la respuesta y actualizamos los valores de los elementos HTML
+                if (dataTemp.status === 'success' && dataTemp.data) {
+                    document.getElementById('temp').innerText = dataTemp.data.Temp || 'No disponible';
+                } else {
+                    document.getElementById('temp').innerText = 'Error al obtener la temperatura';
+                }
+
+                if (dataHumedad.status === 'success' && dataHumedad.data) {
+                    document.getElementById('humedad').innerText = dataHumedad.data.Humedad || 'No disponible';
+                } else {
+                    document.getElementById('humedad').innerText = 'Error al obtener la humedad';
+                }
+
+            } catch (error) {
+                console.error('Error fetching data:', error);
+                document.getElementById('sensor-data').innerHTML = '<p>Error al obtener los datos.</p>';
+            }
+        }
+
+        // Llamamos la función al cargar la página
+        window.addEventListener('load', getData);  // Usamos addEventListener para más control
+
+        // Refrescar los datos automáticamente cada 10 segundos
+        setInterval(getData, 10000); // 10000 milisegundos = 10 segundos
+    </script>
+</body>
+
+</html>
